@@ -28,11 +28,12 @@ for i in range(max_packets):
     file.flush()
 file.close();
 ```
-We changed the mode to write from append so the text file ```data.txt``` didn't accrue more data points than we wanted accidentally.
+We changed the mode to write from append so the text file ```data.txt``` didn't accrue more data points than we wanted accidentally. We chose to not use the Path lib because if this were to be deployed in a product, there would be no need to access different files from other off-board directories, unless that is a specific feature one wants to add. Having ```data.txt``` in the same directory as all the code is enough to ensure that data is written, stored, and read correctly.
 
 
 ## Task 2
 Code for tasks 2 and 3 can be found in ```processing.py```
+
 **Terminal output for task 2:**
 ```sh
 Office Temperature Mean: 22.885091366881266
@@ -80,13 +81,14 @@ Graphs:
 ![time interval](https://github.com/blivney/2020-sensor-miniproject/blob/master/images/time%20interval.png)
 
 **Does [the time interval] mimic a well-known distribution for connection intervals in large systems?**
+
 The time interval histogram (i.e. PMF) appears to be an exponential distribution because the bins must be integers for the library to make the histogram. However, the continuous PDF shows that there is a rising slope to the peak. This is reminiscent of a gamma distribution. Looking into the source code for the IoT simulator, the time intervals are generated using an Erlang distribution, which is derived from a gamma distribution.
 
 
 ## Task 3
 **Code to detect anomalies in original data file:**
 
-The code below if a function which takes three inputs - officetemps, lab1temps and class1temps. New variables were created to store the means and standard deviations of the officetemps, lab1temps and class1temps - which was created in the 'processing.py' file. Afterwards, a new list of temperatures was created using the '[i for i in (listvariable) if i<(value1) and i>(value2)] which would create a new list variable and keep any values that were between the mean minus standard deviation and mean plus standard deviation. The code proceeds by printing out the number of data points in each of the new room lists as well as calculating what the new mean, median and variance of each room is with the anomalies gone. Finally the anomalies are written to a txt file and classified as either office,lab1 or class1 anomalies. 
+The code below if a function which takes three inputs: officetemps, lab1temps and class1temps. New variables were created to store the means and standard deviations of officetemps, lab1temps and class1temps, which was created in ```processing.py```. Afterwards, a new list of temperatures was created using ```[i for i in (listvariable) if i<(value1) and i>(value2)]```, which would create a new list variable and keep any values that were between the mean minus one standard deviation and mean plus one standard deviation. The code proceeds by printing out the number of good data points in each of the new room lists as well as by calculating what the new mean, median and variance of each room is with the anomalies gone. Finally, the anomalies are written to a text file using the same command but taking the opposite data and classified as either office, lab1 or class1 anomalies. 
     
 ```python 
 def anomalyAlgorithm(officetemps, lab1temps, class1temps):
@@ -157,17 +159,19 @@ New class1 temperature median 27.017781630081224
 New class1 temperature variance 5.6935895199010504
 ```
 
+In each room ther were about 200-300 anomalies. The percentage of anomalies was 8.25%, 9.45%, and 14.85% for the office, lab1, and class1 respectively. The office temperature variance dropped from about 8.7 to 0.71, a 92% improvement. The lab1 temperature variance dropped from 6.5 to 0.25, a 96% improvement. Finally, the class1 variance dropped from 168 to 5.69, nearly a 97% improvement.
+
 **Does a persistent change in temperature always indicate a failed sensor?**
 
-No. There may be some instances where a sensor just needs to be recalibrated. Keeping track of means over time to see if its drifting is the best way to tell if recallibration is needed or if some factors are not accounted for. 
+No. There may be some instances where a sensor just needs to be recalibrated. Keeping track of means over time to see if it is drifting is the best way to tell if recallibration is needed or if some factors are not accounted for.
 
 **What are possible bounds on temperature for each room type?** 
 
-According to the [Canadian Centre for Occupational Health and Safety](https://www.ccohs.ca/oshanswers/phys_agents/thermal_comfort.html#:~:text=Recommendations%20provided%20by%20CSA%20Z412,of%2020%2D23.5%C2%B0C) the optimum temperature in the office setting is 24.5C with an acceptable range of 23C-26C. In this case the office mean is 22.99C - or about 23C - with a standard deviation of 0.8C so our bounds would be from 22.2C to 23.8C.
+According to the [Canadian Centre for Occupational Health and Safety](https://www.ccohs.ca/oshanswers/phys_agents/thermal_comfort.html#:~:text=Recommendations%20provided%20by%20CSA%20Z412,of%2020%2D23.5%C2%B0C) the optimum temperature in the office setting is 24.5C with an acceptable range of 23C-26C. In this case the office mean is 22.99C - or about 23C - with a standard deviation of 0.8C so our bounds would be from 22.2C to 23.8C, a little on the cooler side.
 
-According to the [SensoScientific](https://www.sensoscientific.com/blog-maintain-laboratory-temperature-humidity/#:~:text=In%20the%20United%20States%2C%20the,Other%20standards%20exist.) the optimum temperature in the lab setting is 22.5C with an acceptable range of 20C-25C. In this case the new lab1 mean is 20.99C - or about 21C - with a standard deviation of 0.5C so our bounds would be from 20.5C to 21.5C.
+According to the [SensoScientific](https://www.sensoscientific.com/blog-maintain-laboratory-temperature-humidity/#:~:text=In%20the%20United%20States%2C%20the,Other%20standards%20exist.) the optimum temperature in the lab setting is 22.5C with an acceptable range of 20C-25C. In this case the new lab1 mean is 20.99C - or about 21C - with a standard deviation of 0.5C so our bounds would be from 20.5C to 21.5C, within the acceptable bounds.
 
-According to the [Wikipedia-Temperature and Pharmaceutical Science](https://en.wikipedia.org/wiki/Talk%3ARoom_temperature#:~:text=20%C2%B0C%20to%2025,listed%20on%20many%20pharmaceutical%20products.) the optimum temperature in the room setting is 22.5C with an acceptable range of 20C-25C. In this case the new class1 mean is 26.9C with a standard deviation of 2.4C so our bounds would be from 24.5C to 29.3C.
+According to the [Wikipedia-Temperature and Pharmaceutical Science](https://en.wikipedia.org/wiki/Talk%3ARoom_temperature#:~:text=20%C2%B0C%20to%2025,listed%20on%20many%20pharmaceutical%20products.) the optimum temperature in the room setting is 22.5C with an acceptable range of 20C-25C. In this case the new class1 mean is 26.9C with a standard deviation of 2.4C so our bounds would be from 24.5C to 29.3C. This means the class1 temperature is probably set a little too high.
 
 
 ## Task 4
@@ -177,12 +181,12 @@ This simulation is an intermediate representation of the real world because not 
 
 **How is this simulation deficient? What factors does it fail to account for?**
 
-This simulation is deficient in a couple ways. The first is that packages are streamed endlessly to the server. The second way which this simulation is deficient is there may be other clients from different locations around the world that need to connect to the same server which means data comes in at different times and frequencies. Multi-formatting is a factor that this simulation fails to account for. It may be most efficient for some sensors to send data in one format and other sensors to send data in another format, so having a server that is able to process and analyze these different formats and into a single format is adventageous.  
+This simulation is deficient in a couple ways. The first is that packages are streamed endlessly to the server. Sometimes a package may be dropped, or the package may be received but the data is corrupted. Having some error correction and methods in place to deal with lost data is normally essential when dealing with data transmission. The second way which this simulation is deficient is there may be other clients from different locations around the world that need to connect to the same server which means data comes in at different times and frequencies. Multi-formatting is a factor that this simulation fails to account for. It may be most efficient for some sensors to send data in one format and other sensors to send data in another format, so having a server that is able to process and analyze these different formats and into a single format is adventageous.
 
 **How is the difficulty of initially using this Python websockets library as comapared to a compiled language? e.g. C++**
 
-Reading and interpreting the Python websockets code is much easier than C++. Working on Python saved a lot of time and gave us the ability to traceback errors. My partner and I aren't too familiar with Python but we knew enough to get by and not have to deal with problems that C++ would've given us if we were familiarizing ourselves for the first time. 
+Reading and interpreting the Python websockets code is much easier than in C++. Working in Python saved a lot of time and gave us the ability to traceback errors. My partner and I aren't too familiar with Python but we knew enough to get by and not have to deal with problems that C++ would've given us if we were familiarizing ourselves for the first time. 
 
 **Would it be better to have the server poll the sensors, or the sensors reach out to the server when they have data?**
 
-Perhaps the most efficient method would be to have the server poll the sensor at some frequency so that the server is at less risk of crashing from too much data back to back. If the server polls the sensors then there is a set frequency at which the server polls the sensors. The downsides to this is that the sensors will need larger memory capacity and the server is at risk of being flooded with data if say there was a fluctuation of data. If the sensors reach out to the servers when they have data then there would be constant communication with the server which means that there is more energy consumed and the server is constantly running analysis on the data. 
+Perhaps the most efficient method would be to have the server poll the sensor at some frequency so that the server is at less risk of crashing from too much data back to back. If the server polls the sensors then there is a set frequency at which the server needs to have data ready to send, so it can collect a piece of data and hold it until it is polled and sent. The downsides to this is that the sensors will need larger memory capacity and the server is at risk of being flooded with data if there were an influx of sent data. If the sensors reach out to the servers when they have data then there would be constant communication with the server which means that there is more energy consumed and the server is constantly running analysis on the data.
